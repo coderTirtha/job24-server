@@ -68,8 +68,21 @@ async function run() {
     // job CRUD related APIs
     app.post('/jobs', async (req, res) => {
       const newJob = req.body;
-      console.log(newJob);
+      // console.log(newJob);
       const result = await jobCollection.insertOne(newJob);
+      res.send(result);
+    });
+    app.get('/jobs', verifyToken, async (req, res) => {
+      const user = req.user;
+      // console.log("User from token", user);
+      if (req.query.email !== req.user.email) {
+        return res.status(403).send("Forbidden");
+      }
+      let query = {}
+      if (req.query?.email) {
+        query = { email: req.query.email }
+      }
+      const result = await jobCollection.find(query).toArray();
       res.send(result);
     })
     // Send a ping to confirm a successful connection
