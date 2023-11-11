@@ -10,7 +10,8 @@ const port = 5000 || process.env.PORT;
 // readyMade Middlewares
 app.use(cors({
   origin: [
-    'http://localhost:5173'
+    'https://job24-demo.web.app',
+    'https://job24-demo.firebaseapp.com'
   ],
   credentials: true
 }));
