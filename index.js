@@ -88,34 +88,60 @@ async function run() {
       const result = await jobCollection.find(query).toArray();
       res.send(result);
     });
-    app.get('/jobs/category', async(req, res) => {
+    app.get('/jobs/category', async (req, res) => {
       let query = {}
-      if(req.query?.category) {
-        query = {category : req.query.category}
+      if (req.query?.category) {
+        query = { category: req.query.category }
       }
       const result = await jobCollection.find(query).toArray();
       res.send(result);
     });
-    app.get('/jobs/:id', async(req, res) => {
+    app.get('/jobs/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id : new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await jobCollection.find(query).toArray();
       res.send(result);
     });
-    app.post('/bids', async(req, res) => {
+    app.post('/bids', async (req, res) => {
       const newBid = req.body;
       const result = await bidCollection.insertOne(newBid);
       res.send(result);
     });
-    app.get('/myBids', verifyToken, async(req, res) => {
+    app.get('/myBids', verifyToken, async (req, res) => {
       if (req.query?.email !== req.user.email) {
         return res.status(403).send("Forbidden");
       }
       let query = {}
-      if(req.query?.email) {
-        query = {bidderEmail: req.query.email}
+      if (req.query?.email) {
+        query = { bidderEmail: req.query.email }
       }
       const result = await bidCollection.find(query).toArray();
+      res.send(result);
+    });
+    app.get('/bidRequests', verifyToken, async (req, res) => {
+      if (req.query?.email !== req.user.email) {
+        return res.status(403).send("Forbidden");
+      }
+      let query = {}
+      if (req.query?.email) {
+        query = { ownerEmail: req.query.email }
+      }
+      const result = await bidCollection.find(query).toArray();
+      res.send(result);
+    });
+    app.patch('/bidRequests/:id', verifyToken, async (req, res) => {
+      if (req.query?.email !== req.user.email) {
+        return res.status(403).send("Forbidden");
+      }
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updatedOrder = req.body;
+      const updatedDoc = {
+        $set: {
+          status: updatedOrder.status
+        },
+      };
+      const result = await bidCollection.updateOne(filter, updatedDoc);
       res.send(result);
     })
     // Send a ping to confirm a successful connection
