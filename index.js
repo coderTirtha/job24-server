@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
 const port = 5000 || process.env.PORT;
@@ -50,6 +50,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     const jobCollection = client.db('job24').collection('jobs');
+    const bidCollection = client.db('job24').collection('bids');
     // Authentication related APIs
     app.post('/jwt', async (req, res) => {
       const user = req.body;
@@ -92,8 +93,29 @@ async function run() {
       if(req.query?.category) {
         query = {category : req.query.category}
       }
-      console.log(query);
       const result = await jobCollection.find(query).toArray();
+      res.send(result);
+    });
+    app.get('/jobs/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = {_id : new ObjectId(id)}
+      const result = await jobCollection.find(query).toArray();
+      res.send(result);
+    });
+    app.post('/bids', async(req, res) => {
+      const newBid = req.body;
+      const result = await bidCollection.insertOne(newBid);
+      res.send(result);
+    });
+    app.get('/myBids', verifyToken, async(req, res) => {
+      if (req.query?.email !== req.user.email) {
+        return res.status(403).send("Forbidden");
+      }
+      let query = {}
+      if(req.query?.email) {
+        query = {bidderEmail: req.query.email}
+      }
+      const result = await bidCollection.find(query).toArray();
       res.send(result);
     })
     // Send a ping to confirm a successful connection
