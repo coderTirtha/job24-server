@@ -21,7 +21,7 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 
 const verifyToken = (req, res, next) => {
   const token = req.cookies?.token;
-  console.log(token);
+  // console.log(token);
   if (!token) {
     return res.status(401).send({ message: "Not Authorized" })
   }
@@ -62,9 +62,11 @@ async function run() {
     });
     app.post('/logout', async (req, res) => {
       const user = req.body;
-      console.log(user);
+      // console.log(user);
       res.clearCookie('token', { maxAge: 0 }).send({ success: true })
-    })
+    });
+
+
     // job CRUD related APIs
     app.post('/jobs', async (req, res) => {
       const newJob = req.body;
@@ -82,6 +84,15 @@ async function run() {
       if (req.query?.email) {
         query = { email: req.query.email }
       }
+      const result = await jobCollection.find(query).toArray();
+      res.send(result);
+    });
+    app.get('/jobs/category', async(req, res) => {
+      let query = {}
+      if(req.query?.category) {
+        query = {category : req.query.category}
+      }
+      console.log(query);
       const result = await jobCollection.find(query).toArray();
       res.send(result);
     })
